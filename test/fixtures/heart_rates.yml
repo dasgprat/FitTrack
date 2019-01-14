@@ -1,0 +1,11 @@
+# Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+hr1:
+  index: 1
+  emailid: aashwinvats@gmail.com
+  content: 
+
+hr2:
+  index: 2
+  emailid: xyz@example.com
+  content: 

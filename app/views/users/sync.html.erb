@@ -1,0 +1,105 @@
+<script>  
+
+    //user = User.find_by(email:@current_user_email)
+    var access_token = "<%= current_user.fitbitkey%>";    
+    var json_profile;
+    var json_Activity;
+    var json_heartrate; 
+    var json_sleep;
+    var current_date_iso = new Date().toISOString().slice(0,10);    
+    var today_date_epoch = new Date();
+    var old_date_epoch   = new Date().setDate(today_date_epoch.getDate()-30);
+    var old_date_iso     = new Date(old_date_epoch).toISOString().slice(0,10);
+    var sleep_url = 'https://api.fitbit.com/1.2/user/-/sleep/date/' + current_date_iso + '/' + old_date_iso +'.json'
+    console.log(sleep_url)
+    console.log(current_date_iso + "to" + old_date_iso + "with" + access_token)
+
+    if (access_token){
+        jQuery.ajax( {
+            url: 'https://api.fitbit.com/1/user/-/profile.json',
+            type: 'GET',
+            beforeSend : function( xhr ) {
+                xhr.setRequestHeader( 'Authorization', 'Bearer ' + access_token );
+            },
+            success: function( response ) {      
+                json_profile = response
+                jQuery.ajax({
+                    url: 'https://api.fitbit.com/1/user/-/activities/steps/date/today/1m.json',
+                    type: 'GET',
+                    beforeSend : function( xhr ) {
+                        xhr.setRequestHeader( 'Authorization', 'Bearer ' + access_token );
+                    },
+                    success: function( response ) { 
+                        json_Activity = response           
+                    //console.log(JSON.stringify(response))
+                        jQuery.ajax( {
+                            url: 'https://api.fitbit.com/1/user/-/activities/heart/date/today/1m.json',
+                            type: 'GET',
+                            beforeSend : function( xhr ) {
+                                xhr.setRequestHeader( 'Authorization', 'Bearer ' + access_token );
+                            },
+                            success: function( response ) { 
+                                json_heartrate = response
+                                jQuery.ajax({                                    
+                                    url: 'https://api.fitbit.com/1.2/user/-/sleep/date/' + '2018-11-28' + '.json',                                    
+                                    type: 'GET',
+                                    beforeSend : function( xhr ) {
+                                        xhr.setRequestHeader( 'Authorization', 'Bearer ' + access_token );
+                                    },
+                                    success: function( response ) { 
+                                        json_sleep = response
+                                        console.log(json_sleep)
+                                        jQuery.ajax( {
+                                            url: '/users/fitbit',
+                                            type: 'POST',        
+                                            data:{activity:JSON.stringify(json_Activity),profile:JSON.stringify(json_profile),heartrate:JSON.stringify(json_heartrate),sleep_activity:JSON.stringify(json_sleep)},
+                                            dataType:"JSON"        
+                                        });
+                                    },
+                                    error: function( jqXHR , textStatus , errorThrown ) {
+                                        console.log(textStatus);
+                                        console.log(errorThrown);
+                                    }
+                                });
+                                                     
+                            },
+                            error: function( jqXHR , textStatus , errorThrown ) {
+                                console.log(text);
+                                console.log(errorThrown);
+                            }
+                        }); 
+                    },
+                    error: function( jqXHR , textStatus , errorThrown ) {
+                        console.log(text);
+                        console.log(errorThrown);
+                    }
+                });
+            },
+            error: function( jqXHR , textStatus , errorThrown ) {
+                console.log(text);
+                console.log(errorThrown);
+            }
+        });
+    }
+</script>
+
+
+<div class="row">
+        <div class="col col-lg-6 col-md-5 col-sm-4 col-xs-3">
+            &nbsp;
+        </div>
+        <div class="col col-lg-4 col-md-5 col-sm-6 col-xs-7">
+            <div class ="panel panel-info"> 
+                <div class="panel-heading">                    
+                    <div class="form-group">                        
+                       <% if @user_invalid_token ==true%>
+                            <p>Fitbit Device is Not Added</p>
+                            <p>Please Add Device</p>
+                       <% else %>
+                            <p>Fitbit Device is Successfully Synced</p>                             
+                       <%end%> 
+                    </div>
+                </div>
+            </div>    
+        </div>
+</div>
